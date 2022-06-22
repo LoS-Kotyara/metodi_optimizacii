@@ -5,7 +5,7 @@ import (
 	"math"
 )
 
-func printSimplexHist(hist SimplexHist) {
+func PrintSimplexHist(hist SimplexHist) {
 	for i, v := range hist {
 		fmt.Printf("%d:\n", i)
 		printSimplex(v)
@@ -67,7 +67,7 @@ func reflectSimplexVertex(simplex *Simplex) Simplex {
 		toReflect.point[1] + length[1],
 	}
 
-	newVertex := SimplexVertex{point: newPoint, fVal: f(newPoint[0], newPoint[1])}
+	newVertex := SimplexVertex{point: newPoint, fVal: f(newPoint)}
 	var newSimplex Simplex
 	j := 0
 	for i := 0; i < 3; i++ {
@@ -81,14 +81,11 @@ func reflectSimplexVertex(simplex *Simplex) Simplex {
 	return newSimplex
 }
 
-func RegularSimplex(l float64, x0 [2]float64) float64 {
-
-	//s := 1 // stem number
+func RegularSimplex(l float64, x0 [2]float64) (SimplexVertex, int) {
 	n := 3
 
 	var simplexHist SimplexHist
 
-	// X1 ---
 	var simplex Simplex
 	for _i := 0; _i < n; _i++ {
 		i := float64(_i) + 1
@@ -109,15 +106,12 @@ func RegularSimplex(l float64, x0 [2]float64) float64 {
 
 			}
 		}
-		simplex.vertexes[_i] = SimplexVertex{fVal: f(point[0], point[1]), point: point}
+		simplex.vertexes[_i] = SimplexVertex{fVal: f(point), point: point}
 	}
-	simplex.pointer = 2 // last elem
+	simplex.pointer = n - 1 // greatest func value index
 	simplexHist = append(simplexHist, simplex.Sort())
-	// ---
 
 	for true {
-		//simplexHist[len(simplexHist)-1] = simplexHist[len(simplexHist)-1]
-
 		lastSimplex := &simplexHist[len(simplexHist)-1]
 
 		newSimplex := reflectSimplexVertex(lastSimplex).Sort()
@@ -125,21 +119,16 @@ func RegularSimplex(l float64, x0 [2]float64) float64 {
 		if newSimplex.vertexes[2].fVal < lastSimplex.vertexes[lastSimplex.pointer].fVal {
 			newSimplex.pointer = 2
 			simplexHist = append(simplexHist, newSimplex)
-			//fmt.Println(len(simplexHist))
 			continue
 		} else {
 			if lastSimplex.pointer > 0 {
 				lastSimplex.pointer = lastSimplex.pointer - 1
-				//fmt.Println(len(simplexHist) - 1)
-				//fmt.Println(lastSimplex.pointer)
-				//printSimplex(*lastSimplex)
-				//fmt.Println("------")
 				continue
 			}
 			break
 		}
 	}
 
-	printSimplexHist(simplexHist)
-	return simplexHist[len(simplexHist)-1].vertexes[0].fVal
+	//printSimplexHist(simplexHist)
+	return simplexHist[len(simplexHist)-1].vertexes[0], len(simplexHist)
 }

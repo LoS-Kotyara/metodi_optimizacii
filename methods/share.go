@@ -1,25 +1,33 @@
 package methods
 
-import "math"
+import "fmt"
 
-//const EPS = 0.001
+const (
+	EPS = 0.001
+)
 
-func f(x1, x2 float64) float64 {
-	//return 43*x1*x1 + 84*x1*x2 + 43*x2*x2 + 15*x1 - 26*x2 + 42
-	return 6*x1*x1 - 4*x1*x2 + 3*x2*x2 + 4*math.Sqrt(5)*(x1+2*x2) + 22
+var (
+	BasePoint = Point{-2, 1}
+)
+
+func f(point Point) float64 {
+	x1 := point[0]
+	x2 := point[1]
+	return 43*x1*x1 + 84*x1*x2 + 43*x2*x2 + 15*x1 - 26*x2 + 42
 }
 
-type Point [2]float64
-
-type SimplexVertex struct {
-	fVal  float64
-	point Point
-}
-
-type Simplex struct {
-	vertexes [3]SimplexVertex
-	pointer  int
-}
+type (
+	Point         [2]float64
+	SimplexHist   []Simplex
+	SimplexVertex struct {
+		fVal  float64
+		point Point
+	}
+	Simplex struct {
+		vertexes [3]SimplexVertex
+		pointer  int
+	}
+)
 
 func (simplex Simplex) Sort() Simplex {
 	for i := 0; i < len(simplex.vertexes); i++ {
@@ -33,4 +41,23 @@ func (simplex Simplex) Sort() Simplex {
 	return simplex
 }
 
-type SimplexHist []Simplex
+func (v SimplexVertex) Print() {
+	for i := 0; i < len(v.point); i++ {
+		fmt.Printf("\tx%v = %v\n", i, v.point[i])
+	}
+	fmt.Println("\tval = ", v.fVal)
+}
+
+func (simplex Simplex) Print() {
+	for _, v := range simplex.vertexes {
+		v.Print()
+	}
+}
+
+func (hist SimplexHist) Print() {
+	for i, v := range hist {
+		fmt.Printf("%d:\n", i)
+		printSimplex(v)
+		fmt.Println("\t", v.pointer)
+	}
+}

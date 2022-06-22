@@ -6,14 +6,9 @@ import (
 )
 
 func main() {
-	//n := 3 // E_2
+	regularSimplex, N := methods.RegularSimplex(methods.EPS, methods.BasePoint)
 
-	l := 0.001
-	//l := 2.0
-	x0 := [2]float64{-2, 1}
-	//x0 := [2]float64{0, 0}
-
-	regularSimplex := methods.RegularSimplex(l, x0)
-
-	fmt.Printf("Result:\t%v\n", regularSimplex)
+	fmt.Printf("Simplex count:\t%v\n", N)
+	fmt.Println("Result:")
+	regularSimplex.Print()
 }
