@@ -5,8 +5,8 @@ import (
 )
 
 func bitwiseSearch(x Point, ord int) Point {
-	a := x[ord] - 10
-	b := x[ord] + 10
+	a := x[ord] - 10*EPS
+	b := x[ord] + 10*EPS
 
 	d := (b - a) / 4.0
 
