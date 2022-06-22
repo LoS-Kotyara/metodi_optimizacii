@@ -1,9 +1,12 @@
 package methods
 
-import "fmt"
+import (
+	"fmt"
+)
 
 const (
 	EPS = 0.001
+	N   = 2
 )
 
 var (
@@ -13,7 +16,9 @@ var (
 func f(point Point) float64 {
 	x1 := point[0]
 	x2 := point[1]
+
 	return 43*x1*x1 + 84*x1*x2 + 43*x2*x2 + 15*x1 - 26*x2 + 42
+	//return 6*x1*x1 - 4*x1*x2 + 3*x2*x2 + 4*math.Sqrt(5)*(x1+2*x2) + 22
 }
 
 type (
@@ -24,7 +29,7 @@ type (
 		point Point
 	}
 	Simplex struct {
-		vertexes [3]SimplexVertex
+		vertexes [N + 1]SimplexVertex
 		pointer  int
 	}
 )
@@ -49,7 +54,8 @@ func (v SimplexVertex) Print() {
 }
 
 func (simplex Simplex) Print() {
-	for _, v := range simplex.vertexes {
+	for i, v := range simplex.vertexes {
+		fmt.Println("\t", i, ":")
 		v.Print()
 	}
 }
@@ -57,7 +63,7 @@ func (simplex Simplex) Print() {
 func (hist SimplexHist) Print() {
 	for i, v := range hist {
 		fmt.Printf("%d:\n", i)
-		printSimplex(v)
+		v.Print()
 		fmt.Println("\t", v.pointer)
 	}
 }

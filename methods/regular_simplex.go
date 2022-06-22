@@ -1,46 +1,60 @@
 package methods
 
 import (
-	"fmt"
 	"math"
 )
 
-func PrintSimplexHist(hist SimplexHist) {
-	for i, v := range hist {
-		fmt.Printf("%d:\n", i)
-		printSimplex(v)
-		fmt.Println("\t", v.pointer)
-	}
-}
-
-func printSimplex(simplex Simplex) {
-	for _, v := range simplex.vertexes {
-		fmt.Printf("\t%v\n", v)
-	}
-}
-
-func reflectSimplexVertex(simplex *Simplex) Simplex {
+func reflectSimplexVertex(simplex *Simplex, n int) Simplex {
 	//n := 3 // E_2
-	//point := Point{0, 0}
-	//
+	point := Point{0, 0}
+
+	pointer := simplex.pointer
+
+	for i := 0; i < n+1; i++ {
+		if i != pointer {
+			point[0] += simplex.vertexes[i].point[0]
+			point[1] += simplex.vertexes[i].point[1]
+		}
+	}
+
+	point[0] *= 2 / float64(n)
+	point[1] *= 2 / float64(n)
+
+	point[0] -= simplex.vertexes[pointer].point[0]
+	point[1] -= simplex.vertexes[pointer].point[1]
+
+	newVertex := SimplexVertex{
+		fVal:  f(point),
+		point: point,
+	}
+
+	var newSimplex Simplex
+	j := 0
+	for i := 0; i < n+1; i++ {
+		if i != pointer {
+			newSimplex.vertexes[j] = simplex.vertexes[i]
+			j++
+		}
+	}
+	newSimplex.vertexes[j] = newVertex
+
 	//pointer := simplex.pointer
 	//
+	//toReflect := &simplex.vertexes[pointer]
+	//var length [2]float64
 	//for i := 0; i < n; i++ {
-	//	point[0] += simplex.vertexes[i].point[0]
-	//	point[1] += simplex.vertexes[i].point[1]
+	//	if i != pointer {
+	//		length[0] += simplex.vertexes[i].point[0] - toReflect.point[0]
+	//		length[1] += simplex.vertexes[i].point[1] - toReflect.point[1]
+	//	}
 	//}
 	//
-	//point[0] *= 2 / float64(n)
-	//point[1] *= 2 / float64(n)
-	//
-	//point[0] -= simplex.vertexes[pointer].point[0]
-	//point[1] -= simplex.vertexes[pointer].point[1]
-	//
-	//newVertex := SimplexVertex{
-	//	fVal:  f(point[0], point[1]),
-	//	point: point,
+	//newPoint := Point{
+	//	toReflect.point[0] + length[0],
+	//	toReflect.point[1] + length[1],
 	//}
 	//
+	//newVertex := SimplexVertex{point: newPoint, fVal: f(newPoint)}
 	//var newSimplex Simplex
 	//j := 0
 	//for i := 0; i < n; i++ {
@@ -51,43 +65,16 @@ func reflectSimplexVertex(simplex *Simplex) Simplex {
 	//}
 	//newSimplex.vertexes[j] = newVertex
 
-	pointer := simplex.pointer
-
-	toReflect := simplex.vertexes[pointer]
-	var length [2]float64
-	for i := 0; i < 3; i++ {
-		if i != pointer {
-			length[0] += simplex.vertexes[i].point[0] - toReflect.point[0]
-			length[1] += simplex.vertexes[i].point[1] - toReflect.point[1]
-		}
-	}
-
-	newPoint := Point{
-		toReflect.point[0] + length[0],
-		toReflect.point[1] + length[1],
-	}
-
-	newVertex := SimplexVertex{point: newPoint, fVal: f(newPoint)}
-	var newSimplex Simplex
-	j := 0
-	for i := 0; i < 3; i++ {
-		if i != pointer {
-			newSimplex.vertexes[j] = simplex.vertexes[i]
-			j++
-		}
-	}
-	newSimplex.vertexes[j] = newVertex
-
 	return newSimplex
 }
 
 func RegularSimplex(l float64, x0 [2]float64) (SimplexVertex, int) {
-	n := 3
+	n := N
 
 	var simplexHist SimplexHist
 
 	var simplex Simplex
-	for _i := 0; _i < n; _i++ {
+	for _i := 0; _i < n+1; _i++ {
 		i := float64(_i) + 1
 
 		var point Point
@@ -108,16 +95,16 @@ func RegularSimplex(l float64, x0 [2]float64) (SimplexVertex, int) {
 		}
 		simplex.vertexes[_i] = SimplexVertex{fVal: f(point), point: point}
 	}
-	simplex.pointer = n - 1 // greatest func value index
+	simplex.pointer = n // greatest func value index
 	simplexHist = append(simplexHist, simplex.Sort())
 
 	for true {
 		lastSimplex := &simplexHist[len(simplexHist)-1]
 
-		newSimplex := reflectSimplexVertex(lastSimplex).Sort()
+		newSimplex := reflectSimplexVertex(lastSimplex, n).Sort()
 
 		if newSimplex.vertexes[2].fVal < lastSimplex.vertexes[lastSimplex.pointer].fVal {
-			newSimplex.pointer = 2
+			newSimplex.pointer = n
 			simplexHist = append(simplexHist, newSimplex)
 			continue
 		} else {
@@ -129,6 +116,6 @@ func RegularSimplex(l float64, x0 [2]float64) (SimplexVertex, int) {
 		}
 	}
 
-	//printSimplexHist(simplexHist)
+	//simplexHist.Print()
 	return simplexHist[len(simplexHist)-1].vertexes[0], len(simplexHist)
 }
